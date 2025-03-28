@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scraped Ads Viewer</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Poppins, sans-serif;
+      padding: 20px;
+    }
+    .card {
+      background: #222;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      width: 350px;
+      display: inline-block;
+      vertical-align: top;
+      margin-right: 20px;
+    }
+    img {
+      width: 100%;
+      border-radius: 5px;
+    }
+    h2 {
+      color: #ff69b4;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    p {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    a {
+      color: #f06;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live Scraped Ads (São Paulo)</h1>
+  <div id="ads">Loading ads...</div>
+
+  <script>
+    const adsContainer = document.getElementById('ads');
+    const today = new Date().toISOString().split('T')[0];
+    const path = `ads/${today}/`;
+
+    async function fetchAdList() {
+      try {
+        const res = await fetch(`https://api.github.com/repos/countdracula6/werksp-pha/contents/${path}`);
+        const files = await res.json();
+        adsContainer.innerHTML = '';
+
+        for (const file of files) {
+          if (file.name.endsWith('.json')) {
+            const adRes = await fetch(file.download_url);
+            const ad = await adRes.json();
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <img src="${ad.image}" alt="${ad.title}">
+              <h2>${ad.title}</h2>
+              <p>${ad.description}</p>
+              <a href="${ad.url}" target="_blank">View Original</a>
+            `;
+            adsContainer.appendChild(card);
+          }
+        }
+      } catch (e) {
+        adsContainer.innerHTML = 'Failed to load ads.';
+        console.error(e);
+      }
+    }
+
+    fetchAdList();
+  </script>
+</body>
+</html>
